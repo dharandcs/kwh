@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer kwh </title>
+    <style>
+        body { 
+            font-family: 'Times New Roman', Times, serif; 
+            text-align: center; 
+            margin: 20px; 
+            background-color: rgb(245, 174, 240);
+        }
+        h1 { font-size: 29px; color: #3710e6; margin-bottom: 5px; }
+        h2 { font-size: 23px; color: #1307c4; margin-bottom: 5px; }
+        h3 { font-size: 22px; color: #e61313; margin-bottom: 10px; }
+        img.logo { width: 120px; height: 120px; margin-bottom: 10px; border-radius: 57%; }
+
+        input { 
+            margin: 5px; padding: 10px; font-size: 13px; 
+            border: 1px solid #341097; border-radius: 5px; width: 23%;
+        }
+        button { 
+            margin: 10px; padding: 10px; font-size: 16px; 
+            background-color: #260c6d;
+            color: rgb(217, 231, 225); border: none; border-radius: 5px; 
+            cursor: pointer;
+        }
+        button:hover { background-color: #15b415; } 
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgb(135, 134, 230); }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #3734e6; color: rgb(22, 13, 13); }
+        tr:nth-child(even) { background-color: #edbaf1; }
+        tr:nth-child(odd) { background-color: #aaabfa; }
+        #noDataMessage {
+            font-size: 18px; 
+            color: rgb(223, 161, 29); 
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <img src="kwh.png" alt="Company Logo" class="logo">
+    
+    <h1>Nepal Electricity Authority</h1>
+    <h2>Dharan DCS</h2>
+    <h3>ग्राहकको Reading_Kwh थाहा पाउनुहोस् !!!</h3>
+
+    <input type="text" id="searchInput" placeholder="SCNO, ID, NAME">
+    <button onclick="searchData()">Search</button>
+
+    <p id="noDataMessage">ग्राहकको विवरण राख्नुहोस जस्तै : SCNO, ID, NAME कुनै भर्नुहोस्</p>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>SCNO</th>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>CATEGORY</th>
+                <th>LOAD</th>
+                <th>RDG_KWH</th>
+                <th>RDG_MONTH</th>
+                <th>RDG_YEAR</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycby5ywzwybpYVFDkAE0AzmQTRj4v39qE3SaYpadClqY5n0z7m6PPFc6ntFOFVQGQe1x4/exec";
+
+        async function fetchData() {
+            try {
+                let response = await fetch(API_URL);
+                let data = await response.json();
+                if (!data || data.length === 0) {
+                    alert("No data available.");
+                    return;
+                }
+                localStorage.setItem("offlineData", JSON.stringify(data));
+                return data;
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                return JSON.parse(localStorage.getItem("offlineData")) || [];
+            }
+        }
+
+        function searchData() {
+            let query = document.getElementById("searchInput").value.trim().toLowerCase();
+            let noDataMessage = document.getElementById("noDataMessage");
+            let data = JSON.parse(localStorage.getItem("offlineData")) || [];
+
+            noDataMessage.style.display = "none";
+
+            if (query === "") {
+                noDataMessage.textContent = "कृपया SCNO, ID, NAME मध्ये कुनै एक भर्नुहोस्।";
+                noDataMessage.style.display = "block";
+                return;
+            }
+
+            if (data.length === 0) {
+                alert("No offline data found. Please load data first.");
+                return;
+            }
+
+            let filteredData = data.filter(row => 
+                row.SCNO.toString().trim().toLowerCase() === query ||  
+                row.ID.toString().trim().toLowerCase() === query ||  
+                cleanName(row.NAME).toLowerCase().includes(query)    
+            );
+
+            if (filteredData.length === 0) {
+                noDataMessage.textContent = "डेटा फेला परेन। कृपया SCNO, ID, NAME लेख्नुहोस्।";
+                noDataMessage.style.display = "block";
+                return;
+            }
+
+            let tbody = document.querySelector("#dataTable tbody");
+            tbody.innerHTML = "";
+
+            filteredData.forEach(row => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.SCNO}</td>
+                    <td>${row.ID}</td>
+                    <td>${row.NAME}</td>
+                    <td>${row.CATEGORY}</td>
+                    <td>${row.LOAD}</td>
+                    <td>${row.PREV_RDG || "N/A"}</td>
+                    <td>${row.RDG_MONTH || "N/A"}</td>
+                    <td>${row.RDG_YEAR || "N/A"}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function cleanName(name) {
+            return name.replace(/^(mr\.|mrs\.|m\/s\.|mr|mrs|m\/s)/i, '').trim();
+        }
+
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
