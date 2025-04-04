@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consumer kwh</title>
+    <title>Consumer kwh </title>
     <style>
         body { 
             font-family: 'Times New Roman', Times, serif; 
@@ -13,7 +13,7 @@
         }
         h1 { font-size: 29px; color: #3710e6; margin-bottom: 5px; }
         h2 { font-size: 23px; color: #1307c4; margin-bottom: 5px; }
-        h3 { font-size: 22px; color: #f10808; margin-bottom: 10px; }
+        h3 { font-size: 22px; color: #e61313; margin-bottom: 10px; }
         img.logo { width: 120px; height: 120px; margin-bottom: 10px; border-radius: 57%; }
 
         input { 
@@ -29,7 +29,7 @@
         button:hover { background-color: #15b415; } 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgb(135, 134, 230); }
         th, td { border: 1px solid black; padding: 8px; text-align: left; }
-        th { background-color: #8262f3; color: rgb(22, 13, 13); }
+        th { background-color: #3734e6; color: rgb(22, 13, 13); }
         tr:nth-child(even) { background-color: #edbaf1; }
         tr:nth-child(odd) { background-color: #aaabfa; }
         #noDataMessage {
@@ -72,16 +72,9 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby5ywzwybpYVFDkAE0AzmQTRj4v39qE3SaYpadClqY5n0z7m6PPFc6ntFOFVQGQe1x4/exec";
 
-        // Function to handle fetching data from API server
         async function fetchData() {
             try {
-                let response = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Access-Control-Allow-Origin': '*', // Allow CORS
-                        'Content-Type': 'application/json'
-                    }
-                });
+                let response = await fetch(API_URL);
                 let data = await response.json();
                 if (!data || data.length === 0) {
                     alert("No data available.");
@@ -95,7 +88,6 @@
             }
         }
 
-        // Search data based on the input field
         function searchData() {
             let query = document.getElementById("searchInput").value.trim().toLowerCase();
             let noDataMessage = document.getElementById("noDataMessage");
@@ -137,16 +129,14 @@
                     <td>${row.NAME}</td>
                     <td>${row.CATEGORY}</td>
                     <td>${row.LOAD}</td>
-                    <td>${row.RDG_KWH}</td>
-                    <td>${row.RDG_MONTH}</td>
-                    <td>${row.RDG_YEAR}</td>
-                    
+                    <td>${row.PREV_RDG || "N/A"}</td>
+                    <td>${row.RDG_MONTH || "N/A"}</td>
+                    <td>${row.RDG_YEAR || "N/A"}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Clean up name field to remove prefixes like "Mr.", "Mrs.", etc.
         function cleanName(name) {
             return name.replace(/^(mr\.|mrs\.|m\/s\.|mr|mrs|m\/s)/i, '').trim();
         }
