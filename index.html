@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consumer kwh </title>
+    <title>Consumer kwh</title>
     <style>
         body { 
             font-family: 'Times New Roman', Times, serif; 
@@ -72,9 +72,16 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby5ywzwybpYVFDkAE0AzmQTRj4v39qE3SaYpadClqY5n0z7m6PPFc6ntFOFVQGQe1x4/exec";
 
+        // Function to handle fetching data from API server
         async function fetchData() {
             try {
-                let response = await fetch(API_URL);
+                let response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Access-Control-Allow-Origin': '*', // Allow CORS
+                        'Content-Type': 'application/json'
+                    }
+                });
                 let data = await response.json();
                 if (!data || data.length === 0) {
                     alert("No data available.");
@@ -88,6 +95,7 @@
             }
         }
 
+        // Search data based on the input field
         function searchData() {
             let query = document.getElementById("searchInput").value.trim().toLowerCase();
             let noDataMessage = document.getElementById("noDataMessage");
@@ -137,6 +145,7 @@
             });
         }
 
+        // Clean up name field to remove prefixes like "Mr.", "Mrs.", etc.
         function cleanName(name) {
             return name.replace(/^(mr\.|mrs\.|m\/s\.|mr|mrs|m\/s)/i, '').trim();
         }
